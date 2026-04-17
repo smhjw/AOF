@@ -62,6 +62,7 @@ function initGame() {
     isGameOver = false;
     isPaused = false;
     
+    startPrompt.innerHTML = '按方向键 (↑↓←→) 启动防线';
     startPrompt.style.display = 'block';
     upgradeModal.style.display = 'none';
     gameOverModal.style.display = 'none';
