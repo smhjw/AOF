@@ -440,16 +440,21 @@ function triggerUpgrade() {
 }
 
 function selectUpgrade(type) {
-    // 给尾巴(最新的一节)赋予所选武器属性
+    // 给尾巴赋予所选武器属性
     snake[snake.length - 1].weaponType = type;
-    
-    upgradeModal.style.display = 'none';
-    spawnFood(); // 刷新下一个食物
-    updateStats();
-    isPaused = false;
-    lastSnakeMoveTime = performance.now(); // 避免取消暂停后瞬间狂奔
-}
 
+    upgradeModal.style.display = 'none';
+    spawnFood(); 
+    updateStats();
+
+    // 核心修改：升级完成后进入“战术暂停”状态，等待玩家按方向键才继续
+    isPaused = false;
+    isGameStarted = false;
+    directionQueue = []; // 清空之前的按键缓存，防止自动狂奔
+
+    startPrompt.innerHTML = '升级完成！<br><span style="font-size:16px; color:#a0a5b5;">按方向键继续移动</span>';
+    startPrompt.style.display = 'block';
+}
 function triggerGameOver() {
     isGameOver = true;
     document.getElementById('finalLength').innerText = snake.length;
