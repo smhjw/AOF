@@ -148,12 +148,6 @@ document.addEventListener('keydown', (e) => {
     if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight", " "].indexOf(e.key) > -1) e.preventDefault();
     if (isGameOver || isPaused) return;
 
-    if (!isGameStarted && ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key.toLowerCase())) {
-        isGameStarted = true;
-        startPrompt.style.display = 'none';
-        lastSnakeMoveTime = performance.now();
-    }
-
     let newDx = 0, newDy = 0, isDirKey = false;
     switch (e.key.toLowerCase()) {
         case 'arrowup': case 'w': newDx = 0; newDy = -1; isDirKey = true; break;
@@ -163,9 +157,17 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (isDirKey) {
+        if (!isGameStarted) {
+            // 防止开局直接按反方向或者瞎按导致原地暴毙的保险措施 (初始状态向下的话不屏蔽，因为目前没移动)
+            if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) return;
+            
+            isGameStarted = true;
+            startPrompt.style.display = 'none';
+            lastSnakeMoveTime = performance.now();
+        }
+
         let lastDir = directionQueue.length > 0 ? directionQueue[directionQueue.length - 1] : { dx, dy };
         if (lastDir.dx === 0 && lastDir.dy === 0) {
-            if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) return;
             directionQueue.push({ dx: newDx, dy: newDy });
         } else if ((newDx !== -lastDir.dx || newDy !== -lastDir.dy) && (newDx !== lastDir.dx || newDy !== lastDir.dy)) {
             if (directionQueue.length < 3) directionQueue.push({ dx: newDx, dy: newDy });
