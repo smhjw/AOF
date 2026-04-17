@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: radial-gradient(circle at center, #2b1055 0%, #0f0c29 100%);
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+}
+
+.app-wrapper {
+    padding: 20px;
+}
+
+.game-container {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 40px rgba(138, 43, 226, 0.4);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    position: relative;
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: -10px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 900;
+}
+
+.rogue-title {
+    color: #f39c12;
+    text-shadow: 0 0 15px #f39c12;
+    font-style: italic;
+}
+
+.back-btn {
+    color: #a0a5b5;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border: 1px solid #a0a5b5;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    background: #a0a5b5;
+    color: #0f0c29;
+}
+
+.subtitle {
+    color: #bdc3c7;
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.stats-board {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #00d2d3;
+}
+
+.canvas-wrapper {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+}
+
+canvas {
+    background-color: #0b0914;
+    border: 2px solid #8e44ad;
+    border-radius: 8px;
+    box-shadow: inset 0 0 20px rgba(138, 43, 226, 0.2);
+}
+
+.overlay-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    pointer-events: none;
+}
+
+/* 模态框 (Modal) 样式 */
+.overlay-modal {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    display: none; /* 默认隐藏 */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    z-index: 10;
+}
+
+.overlay-modal h2 {
+    margin-top: 0;
+    color: #f1c40f;
+    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+}
+
+.choices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 85%;
+}
+
+.choice-card {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.choice-card:hover {
+    transform: scale(1.05);
+    background: rgba(255,255,255,0.2);
+}
+
+.choice-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
+.choice-card p { margin: 0; font-size: 0.8rem; color: #ccc; }
+
+.choice-card.fire { border-color: #ff4757; box-shadow: 0 0 10px rgba(255, 71, 87, 0.3); }
+.choice-card.fire h3 { color: #ff4757; }
+
+.choice-card.ice { border-color: #70a1ff; box-shadow: 0 0 10px rgba(112, 161, 255, 0.3); }
+.choice-card.ice h3 { color: #70a1ff; }
+
+.choice-card.lightning { border-color: #eccc68; box-shadow: 0 0 10px rgba(236, 204, 104, 0.3); }
+.choice-card.lightning h3 { color: #eccc68; }
+
+button {
+    margin-top: 20px;
+    padding: 10px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    background: #8e44ad;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+    transition: 0.3s;
+}
+button:hover { background: #9b59b6; transform: scale(1.05); }

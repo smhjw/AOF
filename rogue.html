@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AOF: ROGUE - 武装贪吃蛇</title>
+    <link rel="stylesheet" href="rogue.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <div class="game-container">
+            <div class="header-row">
+                <h1>AOF <span class="rogue-title">ROGUE</span></h1>
+                <a href="index.html" class="back-btn">返回经典模式</a>
+            </div>
+            <p class="subtitle">移动堡垒 · 元素突变</p>
+            
+            <div class="stats-board">
+                <div class="stat">节段长度: <span id="lengthDisplay">1</span></div>
+                <div class="stat">击杀数: <span id="killDisplay">0</span></div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" width="400" height="400"></canvas>
+                
+                <!-- 升级三选一面板 -->
+                <div id="upgradeModal" class="modal overlay-modal">
+                    <h2>✨ 能量满溢！选择突变方向 ✨</h2>
+                    <div class="choices-container">
+                        <div class="choice-card fire" onclick="selectUpgrade('fire')">
+                            <h3>🔥 烈焰节段</h3>
+                            <p>发射高伤害的火球，缓慢但致命。</p>
+                        </div>
+                        <div class="choice-card ice" onclick="selectUpgrade('ice')">
+                            <h3>❄️ 冰霜射线</h3>
+                            <p>发射冰冻弹，击中后大幅减速怪物。</p>
+                        </div>
+                        <div class="choice-card lightning" onclick="selectUpgrade('lightning')">
+                            <h3>⚡ 闪电发生器</h3>
+                            <p>极高射速的微型电火花，快速清理杂兵。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游戏结束面板 -->
+                <div id="gameOverModal" class="modal overlay-modal">
+                    <h2 style="color: #ff4757;">堡垒被摧毁！</h2>
+                    <p>最终节段数: <span id="finalLength">0</span></p>
+                    <p>消灭怪物数: <span id="finalKills">0</span></p>
+                    <button id="restartBtn" onclick="location.reload()">重新部署</button>
+                </div>
+                
+                <!-- 开始提示 -->
+                <div id="startPrompt" class="overlay-text">
+                    按方向键 (↑↓←→) 启动防线
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="rogue.js"></script>
+</body>
+</html>
