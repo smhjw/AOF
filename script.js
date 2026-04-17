@@ -282,7 +282,6 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (isGameOver) return;
-    isGameStarted = true;
 
     let newDx = 0;
     let newDy = 0;
@@ -301,11 +300,17 @@ document.addEventListener('keydown', (e) => {
         
         // 1. 如果还在原地没动过 (lastDir为0,0)，接受任何方向
         if (lastDir.dx === 0 && lastDir.dy === 0) {
+            // 防止开局直接按反方向撞到自己的身体
+            if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) {
+                return; // 忽略这个会导致开局自杀的按键
+            }
+            isGameStarted = true; // 只有按下了正确的合法方向键，游戏才正式开始
             directionQueue.push({ dx: newDx, dy: newDy });
         } 
         // 2. 如果已经在移动，拦截“180度掉头”和“重复按下同个方向”的操作
         else if ((newDx !== -lastDir.dx || newDy !== -lastDir.dy) && 
                  (newDx !== lastDir.dx || newDy !== lastDir.dy)) {
+            isGameStarted = true;
             // 控制最大缓存队列数，防止玩家瞎按导致缓存一堆错误走位
             if (directionQueue.length < 3) {
                 directionQueue.push({ dx: newDx, dy: newDy });
