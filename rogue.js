@@ -10,7 +10,8 @@ const gameOverModal = document.getElementById('gameOverModal');
 
 // 游戏常量
 const gridSize = 20;
-const tileCount = canvas.width / gridSize;
+const tileCountX = canvas.width / gridSize;
+const tileCountY = canvas.height / gridSize;
 
 // 游戏状态
 let isGameStarted = false;
@@ -38,9 +39,9 @@ let enemySpawnRate = 2000; // 初始两秒刷一个怪
 // 武器配置字典
 const WEAPONS = {
     'head': { color: '#2ecc71', range: 0, cd: 999999, dmg: 0, speed: 0, type: 'head' },
-    'fire': { color: '#ff4757', range: 6, cd: 800, dmg: 30, speed: 0.2, type: 'fire', projColor: '#ff6b81', size: 4 },
-    'ice': { color: '#70a1ff', range: 5, cd: 1200, dmg: 10, speed: 0.15, type: 'ice', projColor: '#1e90ff', size: 3, effect: 'slow' },
-    'lightning': { color: '#eccc68', range: 4, cd: 400, dmg: 8, speed: 0.3, type: 'lightning', projColor: '#f1c40f', size: 2 }
+    'fire': { color: '#ff4757', range: 8, cd: 800, dmg: 30, speed: 0.2, type: 'fire', projColor: '#ff6b81', size: 4 },
+    'ice': { color: '#70a1ff', range: 7, cd: 1200, dmg: 10, speed: 0.15, type: 'ice', projColor: '#1e90ff', size: 3, effect: 'slow' },
+    'lightning': { color: '#eccc68', range: 6, cd: 400, dmg: 8, speed: 0.3, type: 'lightning', projColor: '#f1c40f', size: 2 }
 };
 
 // 动画循环 ID
@@ -48,7 +49,7 @@ let animationFrameId;
 
 function initGame() {
     snake = [
-        { x: 10, y: 10, weaponType: 'head', lastShootTime: 0 }
+        { x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2), weaponType: 'head', lastShootTime: 0 }
     ];
     dx = 0; dy = 0; directionQueue = [];
     enemies = []; bullets = []; kills = 0;
@@ -107,7 +108,7 @@ function moveSnake() {
     const headY = snake[0].y + dy;
 
     // 撞墙死亡
-    if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
+    if (headX < 0 || headX >= tileCountX || headY < 0 || headY >= tileCountY) {
         triggerGameOver(); return;
     }
 
@@ -145,32 +146,50 @@ function moveSnake() {
 }
 
 document.addEventListener('keydown', (e) => {
-    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight", " "].indexOf(e.key) > -1) e.preventDefault();
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight", " "].indexOf(e.key) > -1) {
+        e.preventDefault();
+    }
+
     if (isGameOver || isPaused) return;
 
-    let newDx = 0, newDy = 0, isDirKey = false;
-    switch (e.key.toLowerCase()) {
-        case 'arrowup': case 'w': newDx = 0; newDy = -1; isDirKey = true; break;
-        case 'arrowdown': case 's': newDx = 0; newDy = 1; isDirKey = true; break;
-        case 'arrowleft': case 'a': newDx = -1; newDy = 0; isDirKey = true; break;
-        case 'arrowright': case 'd': newDx = 1; newDy = 0; isDirKey = true; break;
+    let newDx = 0;
+    let newDy = 0;
+    let isDirKey = false;
+
+    switch (e.key) {
+        case 'ArrowUp': case 'w': case 'W': newDx = 0; newDy = -1; isDirKey = true; break;
+        case 'ArrowDown': case 's': case 'S': newDx = 0; newDy = 1; isDirKey = true; break;
+        case 'ArrowLeft': case 'a': case 'A': newDx = -1; newDy = 0; isDirKey = true; break;
+        case 'ArrowRight': case 'd': case 'D': newDx = 1; newDy = 0; isDirKey = true; break;
     }
 
     if (isDirKey) {
         if (!isGameStarted) {
-            // 防止开局直接按反方向或者瞎按导致原地暴毙的保险措施 (初始状态向下的话不屏蔽，因为目前没移动)
-            if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) return;
-            
             isGameStarted = true;
             startPrompt.style.display = 'none';
             lastSnakeMoveTime = performance.now();
+            directionQueue.push({ dx: newDx, dy: newDy });
+            return;
         }
 
+        // 取出当前队列中最后一次注册的方向
         let lastDir = directionQueue.length > 0 ? directionQueue[directionQueue.length - 1] : { dx, dy };
+        
+        // 1. 如果还在原地没动过 (lastDir为0,0)，接受任何方向
         if (lastDir.dx === 0 && lastDir.dy === 0) {
+            // 防止开局直接按反方向撞到自己的身体
+            if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) {
+                return; // 忽略这个会导致开局自杀的按键
+            }
             directionQueue.push({ dx: newDx, dy: newDy });
-        } else if ((newDx !== -lastDir.dx || newDy !== -lastDir.dy) && (newDx !== lastDir.dx || newDy !== lastDir.dy)) {
-            if (directionQueue.length < 3) directionQueue.push({ dx: newDx, dy: newDy });
+        } 
+        // 2. 如果已经在移动，拦截“180度掉头”和“重复按下同个方向”的操作
+        else if ((newDx !== -lastDir.dx || newDy !== -lastDir.dy) && 
+                 (newDx !== lastDir.dx || newDy !== lastDir.dy)) {
+            // 控制最大缓存队列数，防止玩家瞎按导致缓存一堆错误走位
+            if (directionQueue.length < 3) {
+                directionQueue.push({ dx: newDx, dy: newDy });
+            }
         }
     }
 });
