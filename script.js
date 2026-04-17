@@ -140,13 +140,13 @@ function draw() {
 
     // 绘制渐变蛇身
     for (let i = 0; i < snake.length; i++) {
-        // 从头部的亮蓝色渐变到尾部的深蓝色
+        // 从头部的亮绿色渐变到尾部的深绿色
         const colorRatio = i / snake.length;
-        const r = Math.floor(79 - (79 - 30) * colorRatio);
-        const g = Math.floor(172 - (172 - 60) * colorRatio);
-        const b = Math.floor(254 - (254 - 150) * colorRatio);
+        const r = Math.floor(46 - (46 - 20) * colorRatio);   // #2ecc71 -> 略暗
+        const g = Math.floor(204 - (204 - 100) * colorRatio); // 保持绿色为主
+        const b = Math.floor(113 - (113 - 50) * colorRatio);
         
-        ctx.fillStyle = i === 0 ? '#4facfe' : `rgb(${r}, ${g}, ${b})`;
+        ctx.fillStyle = i === 0 ? '#2ecc71' : `rgb(${r}, ${g}, ${b})`;
         
         // 带有微小圆角的蛇身体
         ctx.beginPath();
@@ -159,7 +159,7 @@ function draw() {
 
         // 为蛇头画两个小眼睛
         if (i === 0) {
-            ctx.fillStyle = '#1a1a2e';
+            ctx.fillStyle = '#ffffff'; // 眼睛改成白色，在绿蛇头上更明显
             let eye1X, eye1Y, eye2X, eye2Y;
             // 预测头部的朝向
             const currentDx = directionQueue.length > 0 ? directionQueue[0].dx : dx;
@@ -180,6 +180,11 @@ function draw() {
             }
             ctx.beginPath(); ctx.arc(eye1X, eye1Y, 2, 0, Math.PI * 2); ctx.fill();
             ctx.beginPath(); ctx.arc(eye2X, eye2Y, 2, 0, Math.PI * 2); ctx.fill();
+            
+            // 给眼睛加黑色瞳孔
+            ctx.fillStyle = '#000000';
+            ctx.beginPath(); ctx.arc(eye1X + (currentDx*1), eye1Y + (currentDy*1), 1, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(eye2X + (currentDx*1), eye2Y + (currentDy*1), 1, 0, Math.PI * 2); ctx.fill();
         }
     }
 }
