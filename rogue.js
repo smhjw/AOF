@@ -10,8 +10,8 @@ const gameOverModal = document.getElementById('gameOverModal');
 
 // 游戏常量
 const gridSize = 20;
-const tileCountX = canvas.width / gridSize;
-const tileCountY = canvas.height / gridSize;
+// 因为我们在 html 里把 canvas 设置成了 600x600 的正方形，所以 tileCount 是 30
+const tileCount = canvas.width / gridSize; 
 
 // 游戏状态
 let isGameStarted = false;
@@ -48,8 +48,9 @@ const WEAPONS = {
 let animationFrameId;
 
 function initGame() {
+    // 居中生成蛇
     snake = [
-        { x: Math.floor(tileCountX/2), y: Math.floor(tileCountY/2), weaponType: 'head', lastShootTime: 0 }
+        { x: Math.floor(tileCount/2), y: Math.floor(tileCount/2), weaponType: 'head', lastShootTime: 0 }
     ];
     dx = 0; dy = 0; directionQueue = [];
     enemies = []; bullets = []; kills = 0;
@@ -109,7 +110,7 @@ function moveSnake() {
     const headY = snake[0].y + dy;
 
     // 撞墙死亡
-    if (headX < 0 || headX >= tileCountX || headY < 0 || headY >= tileCountY) {
+    if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
         triggerGameOver(); return;
     }
 
@@ -179,11 +180,16 @@ document.addEventListener('keydown', (e) => {
         
         // 1. 如果还在原地没动过 (lastDir为0,0)，接受任何方向
         if (lastDir.dx === 0 && lastDir.dy === 0) {
+            // 防止开局直接按反方向撞到自己的身体
+            if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) {
+                return; // 忽略这个会导致开局自杀的按键
+            }
             directionQueue.push({ dx: newDx, dy: newDy });
         } 
         // 2. 如果已经在移动，拦截“180度掉头”和“重复按下同个方向”的操作
         else if ((newDx !== -lastDir.dx || newDy !== -lastDir.dy) && 
                  (newDx !== lastDir.dx || newDy !== lastDir.dy)) {
+            // 控制最大缓存队列数，防止玩家瞎按导致缓存一堆错误走位
             if (directionQueue.length < 3) {
                 directionQueue.push({ dx: newDx, dy: newDy });
             }
@@ -452,6 +458,7 @@ function selectUpgrade(type) {
     startPrompt.innerHTML = '升级完成！<br><span style="font-size:16px; color:#a0a5b5;">按方向键继续移动</span>';
     startPrompt.style.display = 'block';
 }
+
 function triggerGameOver() {
     isGameOver = true;
     document.getElementById('finalLength').innerText = snake.length;
