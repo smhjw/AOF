@@ -2,6 +2,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const restartBtn = document.getElementById('restartBtn');
+const leaderboardList = document.getElementById('leaderboardList');
+const clearBoardBtn = document.getElementById('clearBoardBtn');
 
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
@@ -14,6 +16,10 @@ let score = 0;
 let gameLoopInterval;
 let isGameOver = false;
 let isGameStarted = false;
+
+// 排行榜配置
+const MAX_SCORES = 8;
+const LEADERBOARD_KEY = 'aof_leaderboard_v1';
 
 function initGame() {
     snake = [
@@ -29,7 +35,8 @@ function initGame() {
     restartBtn.style.display = 'none';
     
     placeFood();
-    draw(); // Draw initial state
+    updateLeaderboardDisplay(); // 初始化显示排行榜
+    draw(); // 绘制初始状态
     
     if (gameLoopInterval) clearInterval(gameLoopInterval);
     gameLoopInterval = setInterval(gameLoop, 120);
@@ -94,7 +101,7 @@ function draw() {
         ctx.fillStyle = 'white';
         ctx.font = '20px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('按方向键 (↑ ↓ ← →) 开始游戏', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('按方向键开始游戏', canvas.width / 2, canvas.height / 2);
     }
 
     // 绘制食物
@@ -105,7 +112,6 @@ function draw() {
 
     // 绘制蛇
     for (let i = 0; i < snake.length; i++) {
-        // 蛇头颜色稍微不同
         ctx.fillStyle = i === 0 ? '#2ecc71' : '#27ae60';
         ctx.fillRect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize - 1, gridSize - 1);
     }
@@ -135,11 +141,77 @@ function placeFood() {
 function gameOver() {
     isGameOver = true;
     clearInterval(gameLoopInterval);
-    restartBtn.style.display = 'inline-block';
+    draw(); // 确保画面停在结束状态
+    
+    // 延迟一点点触发弹窗，保证渲染完成
+    setTimeout(() => {
+        checkHighScore();
+        restartBtn.style.display = 'inline-block';
+    }, 100);
 }
 
+// ---------------- 排行榜逻辑 ----------------
+
+function getLeaderboard() {
+    const data = localStorage.getItem(LEADERBOARD_KEY);
+    return data ? JSON.parse(data) : [];
+}
+
+function saveScore(name, score) {
+    const board = getLeaderboard();
+    board.push({ name: name || '匿名玩家', score: score });
+    // 降序排序
+    board.sort((a, b) => b.score - a.score);
+    // 只保留前 N 名
+    board.splice(MAX_SCORES);
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
+    updateLeaderboardDisplay();
+}
+
+function updateLeaderboardDisplay() {
+    const board = getLeaderboard();
+    if (board.length === 0) {
+        leaderboardList.innerHTML = '<li><span style="color: #bdc3c7;">暂无记录，快来霸榜！</span></li>';
+        return;
+    }
+    
+    leaderboardList.innerHTML = board.map((entry, index) => {
+        let medal = '';
+        if (index === 0) medal = '🥇 ';
+        else if (index === 1) medal = '🥈 ';
+        else if (index === 2) medal = '🥉 ';
+        else medal = `<span style="display:inline-block; width: 24px; text-align: left; color:#bdc3c7;">${index + 1}.</span>`;
+        
+        return `<li>
+            <span class="name" title="${entry.name}">${medal}${entry.name}</span>
+            <span class="score">${entry.score}</span>
+        </li>`;
+    }).join('');
+}
+
+function checkHighScore() {
+    if (score === 0) return; // 0分不记录
+    const board = getLeaderboard();
+    // 检查是否有资格上榜：榜单未满 或 分数大于榜单最后一名
+    if (board.length < MAX_SCORES || score > board[board.length - 1].score) {
+        const playerName = prompt(`🎉 恭喜！你以 ${score} 分进入了排行榜！\n请留下你的大名：`);
+        if (playerName !== null) { // 用户没有点取消
+            saveScore(playerName.trim() || '匿名玩家', score);
+        }
+    }
+}
+
+clearBoardBtn.addEventListener('click', () => {
+    if (confirm('确定要清空本地的排行榜记录吗？')) {
+        localStorage.removeItem(LEADERBOARD_KEY);
+        updateLeaderboardDisplay();
+    }
+});
+
+// ---------------- 游戏控制 ----------------
+
 document.addEventListener('keydown', (e) => {
-    // 防止滚动页面
+    // 防止方向键和空格键滚动页面
     if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight", " "].indexOf(e.key) > -1) {
         e.preventDefault();
     }
@@ -180,7 +252,10 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-restartBtn.addEventListener('click', initGame);
+restartBtn.addEventListener('click', () => {
+    restartBtn.blur(); // 移除焦点，防止空格键误触
+    initGame();
+});
 
 // 启动游戏
 initGame();
