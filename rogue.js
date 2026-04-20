@@ -10,16 +10,14 @@ const gameOverModal = document.getElementById('gameOverModal');
 
 // 游戏常量
 const gridSize = 20;
-// 因为我们在 html 里把 canvas 设置成了 600x600 的正方形，所以 tileCount 是 30
 const tileCount = canvas.width / gridSize; 
 
 // 游戏状态
 let isGameStarted = false;
 let isGameOver = false;
 let isPaused = false;
+let isGameWon = false; // 隐藏的胜利机制（满屏）
 
-// 实体数组
-// snake: [{x, y, weaponType, lastShootTime}]
 let snake = [];
 let dx = 0;
 let dy = 0;
@@ -34,7 +32,7 @@ let lastSnakeMoveTime = 0;
 const SNAKE_SPEED = 120; // 蛇移动间隔(ms)
 
 let lastEnemySpawnTime = 0;
-let enemySpawnRate = 2000; // 初始两秒刷一个怪
+let enemySpawnRate = 2000;
 
 // 武器配置字典
 const WEAPONS = {
@@ -44,11 +42,10 @@ const WEAPONS = {
     'lightning': { color: '#eccc68', range: 6, cd: 400, dmg: 8, speed: 0.3, type: 'lightning', projColor: '#f1c40f', size: 2 }
 };
 
-// 动画循环 ID
 let animationFrameId;
+let lastRenderTime = 0; // 用于计算 dt
 
 function initGame() {
-    // 居中生成蛇
     snake = [
         { x: Math.floor(tileCount/2), y: Math.floor(tileCount/2), weaponType: 'head', lastShootTime: 0 }
     ];
@@ -62,8 +59,10 @@ function initGame() {
     isGameStarted = false;
     isGameOver = false;
     isPaused = false;
+    isGameWon = false;
+    lastRenderTime = performance.now();
     
-    startPrompt.innerHTML = '按方向键 (↑↓←→) 启动防线';
+    startPrompt.innerHTML = '滑动或按方向键 (↑↓←→) 启动防线';
     startPrompt.style.display = 'block';
     upgradeModal.style.display = 'none';
     gameOverModal.style.display = 'none';
@@ -73,25 +72,30 @@ function initGame() {
 }
 
 function gameLoop(timestamp) {
+    if (!lastRenderTime) lastRenderTime = timestamp;
+    // 核心修复：引入 Delta Time (dt)
+    let dt = timestamp - lastRenderTime;
+    lastRenderTime = timestamp;
+
+    // 防止玩家切换标签页太久导致 dt 爆表（造成瞬间瞬移暴毙）
+    if (dt > 100) dt = 16.67; 
+
     if (isGameOver) return;
 
     if (!isPaused && isGameStarted) {
-        // 1. 蛇体网格移动逻辑
         if (timestamp - lastSnakeMoveTime > SNAKE_SPEED) {
             moveSnake();
             lastSnakeMoveTime = timestamp;
         }
 
-        // 2. 刷怪逻辑 (随击杀数加快刷新)
         if (timestamp - lastEnemySpawnTime > enemySpawnRate) {
             spawnEnemy();
             lastEnemySpawnTime = timestamp;
-            enemySpawnRate = Math.max(400, 2000 - kills * 20); // 最快0.4秒一个
+            enemySpawnRate = Math.max(400, 2000 - kills * 20); 
         }
 
-        // 3. 实时逻辑更新 (不锁帧，实现平滑移动)
-        updateEnemies();
-        updateBullets();
+        updateEnemies(dt);
+        updateBullets(dt);
         processShooting(timestamp);
     }
 
@@ -109,24 +113,20 @@ function moveSnake() {
     const headX = snake[0].x + dx;
     const headY = snake[0].y + dy;
 
-    // 撞墙死亡
     if (headX < 0 || headX >= tileCount || headY < 0 || headY >= tileCount) {
         triggerGameOver(); return;
     }
 
-    // 撞到自己身体死亡
     for (let i = 0; i < snake.length; i++) {
         if (headX === snake[i].x && headY === snake[i].y) {
             triggerGameOver(); return;
         }
     }
 
-    // 移动身体：在头部插入新坐标，弹出尾部（除非吃到食物）
-    // 注意：我们要继承原位置的武器属性
     let newSnake = [{ x: headX, y: headY, weaponType: 'head', lastShootTime: snake[0].lastShootTime }];
     
     let ateFood = false;
-    if (headX === food.x && headY === food.y) {
+    if (food && headX === food.x && headY === food.y) {
         ateFood = true;
     }
 
@@ -141,9 +141,34 @@ function moveSnake() {
     
     snake = newSnake;
 
-    // 吃到食物，触发肉鸽升级！
     if (ateFood) {
         triggerUpgrade();
+    }
+}
+
+function handleDirectionInput(newDx, newDy) {
+    if (!isGameStarted) {
+        isGameStarted = true;
+        startPrompt.style.display = 'none';
+        lastSnakeMoveTime = performance.now();
+        dx = newDx; 
+        dy = newDy;
+        return;
+    }
+
+    let lastDir = directionQueue.length > 0 ? directionQueue[directionQueue.length - 1] : { dx, dy };
+    
+    if (lastDir.dx === 0 && lastDir.dy === 0) {
+        if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) {
+            return;
+        }
+        directionQueue.push({ dx: newDx, dy: newDy });
+    } 
+    else if ((newDx !== -lastDir.dx || newDy !== -lastDir.dy) && 
+             (newDx !== lastDir.dx || newDy !== lastDir.dy)) {
+        if (directionQueue.length < 3) {
+            directionQueue.push({ dx: newDx, dy: newDy });
+        }
     }
 }
 
@@ -152,10 +177,18 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
     }
 
+    if (e.key === ' ') {
+        // 如果正在选择升级，不允许通过空格解开暂停
+        if (isGameOver || upgradeModal.style.display === 'flex') return;
+        if (isGameStarted) {
+            isPaused = !isPaused;
+        }
+        return;
+    }
+
     if (isGameOver || isPaused) return;
 
-    let newDx = 0;
-    let newDy = 0;
+    let newDx = 0, newDy = 0;
     let isDirKey = false;
 
     switch (e.key) {
@@ -165,54 +198,68 @@ document.addEventListener('keydown', (e) => {
         case 'ArrowRight': case 'd': case 'D': newDx = 1; newDy = 0; isDirKey = true; break;
     }
 
-    if (isDirKey) {
-        if (!isGameStarted) {
-            isGameStarted = true;
-            startPrompt.style.display = 'none';
-            lastSnakeMoveTime = performance.now();
-            dx = newDx; // 立即赋予方向，不用只进队列
-            dy = newDy;
-            return;
-        }
-
-        // 取出当前队列中最后一次注册的方向
-        let lastDir = directionQueue.length > 0 ? directionQueue[directionQueue.length - 1] : { dx, dy };
-        
-        // 1. 如果还在原地没动过 (lastDir为0,0)，接受任何方向
-        if (lastDir.dx === 0 && lastDir.dy === 0) {
-            // 防止开局直接按反方向撞到自己的身体
-            if (snake.length > 1 && (snake[0].x + newDx === snake[1].x && snake[0].y + newDy === snake[1].y)) {
-                return; // 忽略这个会导致开局自杀的按键
-            }
-            directionQueue.push({ dx: newDx, dy: newDy });
-        } 
-        // 2. 如果已经在移动，拦截“180度掉头”和“重复按下同个方向”的操作
-        else if ((newDx !== -lastDir.dx || newDy !== -lastDir.dy) && 
-                 (newDx !== lastDir.dx || newDy !== lastDir.dy)) {
-            // 控制最大缓存队列数，防止玩家瞎按导致缓存一堆错误走位
-            if (directionQueue.length < 3) {
-                directionQueue.push({ dx: newDx, dy: newDy });
-            }
-        }
-    }
+    if (isDirKey) handleDirectionInput(newDx, newDy);
 });
+
+// ---------------- 移动端触摸控制 ----------------
+let touchStartX = 0;
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+}, { passive: false });
+
+document.addEventListener('touchmove', (e) => {
+    if (e.target === canvas) e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('touchend', (e) => {
+    if (isGameOver || isPaused) return;
+    let touchEndX = e.changedTouches[0].screenX;
+    let touchEndY = e.changedTouches[0].screenY;
+    
+    let deltaX = touchEndX - touchStartX;
+    let deltaY = touchEndY - touchStartY;
+    
+    if (Math.abs(deltaX) > 30 || Math.abs(deltaY) > 30) {
+        let newDx = 0, newDy = 0;
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            newDx = deltaX > 0 ? 1 : -1;
+            newDy = 0;
+        } else {
+            newDx = 0;
+            newDy = deltaY > 0 ? 1 : -1;
+        }
+        handleDirectionInput(newDx, newDy);
+    } else if (e.target === canvas && isGameStarted && !isGameOver && upgradeModal.style.display !== 'flex') {
+         isPaused = !isPaused;
+    }
+}, { passive: false });
+
 
 // ---------------- 实体逻辑 (怪、子弹) ----------------
 
+// 修复：寻找全图空位，解决满屏死循环
 function spawnFood() {
-    while (true) {
-        let fx = Math.floor(Math.random() * tileCount);
-        let fy = Math.floor(Math.random() * tileCount);
-        // 确保食物不刷在蛇身上
-        if (!snake.some(s => s.x === fx && s.y === fy)) {
-            food = { x: fx, y: fy };
-            break;
+    let freeSpots = [];
+    for (let x = 0; x < tileCount; x++) {
+        for (let y = 0; y < tileCount; y++) {
+            if (!snake.some(s => s.x === x && s.y === y)) {
+                freeSpots.push({x, y});
+            }
         }
     }
+    
+    if (freeSpots.length === 0) {
+        food = null; // 满屏通关！
+        return;
+    }
+    
+    let idx = Math.floor(Math.random() * freeSpots.length);
+    food = freeSpots[idx];
 }
 
 function spawnEnemy() {
-    // 在屏幕边缘随机生成敌人
     let ex, ey;
     if (Math.random() < 0.5) {
         ex = Math.random() < 0.5 ? -1 : tileCount;
@@ -222,38 +269,36 @@ function spawnEnemy() {
         ey = Math.random() < 0.5 ? -1 : tileCount;
     }
     
-    // 随时间增加血量
     const hp = 30 + (kills * 2);
     enemies.push({ x: ex, y: ey, hp: hp, maxHp: hp, speed: 0.03, baseSpeed: 0.03, slowTimer: 0 });
 }
 
-function updateEnemies() {
+// 修复：引入 dt 解绑帧率
+function updateEnemies(dt) {
+    const timeScale = dt / 16.67; // 以 60帧 (约 16.67ms) 为基准
     const head = snake[0];
+    
     for (let i = enemies.length - 1; i >= 0; i--) {
         let e = enemies[i];
         
-        // 减速debuff处理
         if (e.slowTimer > 0) {
-            e.slowTimer -= 16; // 大约一帧的时间
-            e.speed = e.baseSpeed * 0.4; // 减速60%
+            e.slowTimer -= dt; 
+            e.speed = e.baseSpeed * 0.4; 
         } else {
             e.speed = e.baseSpeed;
         }
 
-        // 敌人永远追踪蛇头
         let dirX = head.x - e.x;
         let dirY = head.y - e.y;
         let dist = Math.hypot(dirX, dirY);
         
         if (dist > 0) {
-            e.x += (dirX / dist) * e.speed;
-            e.y += (dirY / dist) * e.speed;
+            e.x += (dirX / dist) * e.speed * timeScale;
+            e.y += (dirY / dist) * e.speed * timeScale;
         }
 
-        // 碰撞检测：如果敌人碰到蛇头或蛇身任何部位
         for (let s of snake) {
             if (Math.hypot(s.x - e.x, s.y - e.y) < 0.8) {
-                // 暂时设定被摸到直接游戏结束（后续可做成扣血）
                 triggerGameOver();
                 return;
             }
@@ -262,14 +307,12 @@ function updateEnemies() {
 }
 
 function processShooting(timestamp) {
-    // 遍历蛇身（跳过蛇头），找怪射击
     for (let i = 1; i < snake.length; i++) {
         let seg = snake[i];
         let weapon = WEAPONS[seg.weaponType];
         if (!weapon || weapon.type === 'head') continue;
 
         if (timestamp - seg.lastShootTime > weapon.cd) {
-            // 找最近的敌人
             let target = null;
             let minDist = weapon.range;
 
@@ -282,7 +325,6 @@ function processShooting(timestamp) {
             }
 
             if (target) {
-                // 开火！
                 let dirX = target.x - seg.x;
                 let dirY = target.y - seg.y;
                 let dist = Math.hypot(dirX, dirY);
@@ -302,38 +344,36 @@ function processShooting(timestamp) {
     }
 }
 
-function updateBullets() {
+// 修复：引入 dt 解绑子弹帧率
+function updateBullets(dt) {
+    const timeScale = dt / 16.67;
     for (let i = bullets.length - 1; i >= 0; i--) {
         let b = bullets[i];
-        b.x += b.vx;
-        b.y += b.vy;
+        b.x += b.vx * timeScale;
+        b.y += b.vy * timeScale;
 
-        // 子弹飞出屏幕销毁
         if (b.x < -2 || b.x > tileCount+2 || b.y < -2 || b.y > tileCount+2) {
             bullets.splice(i, 1);
             continue;
         }
 
-        // 子弹打怪检测
         let hit = false;
         for (let j = enemies.length - 1; j >= 0; j--) {
             let e = enemies[j];
-            if (Math.hypot(b.x - e.x, b.y - e.y) < 0.6) { // 命中判定半径
+            if (Math.hypot(b.x - e.x, b.y - e.y) < 0.6) { 
                 e.hp -= b.dmg;
                 hit = true;
                 
-                // 应用特效
                 if (b.effect === 'slow') {
-                    e.slowTimer = 2000; // 减速2秒
+                    e.slowTimer = 2000; 
                 }
 
-                // 怪物死亡
                 if (e.hp <= 0) {
                     enemies.splice(j, 1);
                     kills++;
                     updateStats();
                 }
-                break; // 一发子弹只打一个怪
+                break; 
             }
         }
         if (hit) bullets.splice(i, 1);
@@ -345,7 +385,6 @@ function updateBullets() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 画网格暗纹
     ctx.strokeStyle = 'rgba(138, 43, 226, 0.1)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvas.width; i += gridSize) {
@@ -353,7 +392,6 @@ function draw() {
         ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
     }
 
-    // 画食物 (升级核心)
     if (food) {
         ctx.shadowBlur = 15;
         ctx.shadowColor = '#f39c12';
@@ -361,7 +399,6 @@ function draw() {
         ctx.beginPath();
         ctx.arc(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/2 - 2, 0, Math.PI*2);
         ctx.fill();
-        // 核心内圈
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/4, 0, Math.PI*2);
@@ -369,7 +406,6 @@ function draw() {
         ctx.shadowBlur = 0;
     }
 
-    // 画子弹
     for (let b of bullets) {
         ctx.shadowBlur = 5;
         ctx.shadowColor = b.color;
@@ -380,27 +416,22 @@ function draw() {
         ctx.shadowBlur = 0;
     }
 
-    // 画蛇
     for (let i = snake.length - 1; i >= 0; i--) {
         let seg = snake[i];
         let color = WEAPONS[seg.weaponType].color;
         
         ctx.fillStyle = color;
-        // 蛇身渲染
         if (i === 0) {
             ctx.shadowBlur = 10; ctx.shadowColor = color;
             ctx.fillRect(seg.x * gridSize + 1, seg.y * gridSize + 1, gridSize - 2, gridSize - 2);
             ctx.shadowBlur = 0;
-            // 眼睛
             ctx.fillStyle = 'white';
             ctx.fillRect(seg.x * gridSize + 5, seg.y * gridSize + 5, 3, 3);
             ctx.fillRect(seg.x * gridSize + 12, seg.y * gridSize + 5, 3, 3);
         } else {
-            // 身体武器节段画成圆形更像炮塔
             ctx.beginPath();
             ctx.arc(seg.x * gridSize + gridSize/2, seg.y * gridSize + gridSize/2, gridSize/2 - 1, 0, Math.PI*2);
             ctx.fill();
-            // 中心加个黑点代表枪管
             ctx.fillStyle = 'rgba(0,0,0,0.5)';
             ctx.beginPath();
             ctx.arc(seg.x * gridSize + gridSize/2, seg.y * gridSize + gridSize/2, 2, 0, Math.PI*2);
@@ -408,12 +439,10 @@ function draw() {
         }
     }
 
-    // 画怪物
     for (let e of enemies) {
         let px = e.x * gridSize;
         let py = e.y * gridSize;
         
-        // 怪物本体 (受减速变蓝)
         ctx.fillStyle = e.slowTimer > 0 ? '#74b9ff' : '#ff4757';
         ctx.beginPath();
         ctx.moveTo(px + gridSize/2, py);
@@ -422,11 +451,20 @@ function draw() {
         ctx.closePath();
         ctx.fill();
 
-        // 血条
         ctx.fillStyle = '#333';
         ctx.fillRect(px, py - 6, gridSize, 3);
         ctx.fillStyle = '#2ecc71';
         ctx.fillRect(px, py - 6, gridSize * (Math.max(0, e.hp) / e.maxHp), 3);
+    }
+    
+    // 暂停 UI 遮罩
+    if (isPaused && upgradeModal.style.display !== 'flex') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#f1c40f';
+        ctx.font = 'bold 30px Poppins, Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('已暂停 PAUSED', canvas.width / 2, canvas.height / 2);
     }
 }
 
@@ -443,25 +481,39 @@ function triggerUpgrade() {
 }
 
 function selectUpgrade(type) {
-    // 给尾巴赋予所选武器属性
     snake[snake.length - 1].weaponType = type;
 
     upgradeModal.style.display = 'none';
     spawnFood(); 
+    
+    if (!food) {
+        triggerWin();
+        return;
+    }
+    
     updateStats();
 
-    // 核心修改：升级完成后进入“战术暂停”状态，等待玩家按方向键才继续
     isPaused = false;
     isGameStarted = false;
-    directionQueue = []; // 清空之前的按键缓存，防止自动狂奔
+    directionQueue = []; 
 
-    startPrompt.innerHTML = '升级完成！<br><span style="font-size:16px; color:#a0a5b5;">按方向键继续移动</span>';
+    startPrompt.innerHTML = '升级完成！<br><span style="font-size:16px; color:#a0a5b5;">滑动或按方向键继续</span>';
     startPrompt.style.display = 'block';
 }
 
 function triggerGameOver() {
     isGameOver = true;
     document.getElementById('finalLength').innerText = snake.length;
+    document.getElementById('finalKills').innerText = kills;
+    gameOverModal.style.display = 'flex';
+}
+
+function triggerWin() {
+    isGameOver = true;
+    isGameWon = true;
+    document.getElementById('gameOverModal').querySelector('h2').innerText = "🏆 堡垒化身神明！";
+    document.getElementById('gameOverModal').querySelector('h2').style.color = "#f1c40f";
+    document.getElementById('finalLength').innerText = snake.length + " (满级)";
     document.getElementById('finalKills').innerText = kills;
     gameOverModal.style.display = 'flex';
 }
