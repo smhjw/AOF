@@ -6,8 +6,8 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background: linear-gradient(135deg, #1e1e2f 0%, #252542 100%);
-    color: #fff;
+    background: linear-gradient(135deg, #232336 0%, #2a2a40 100%);
+    color: #e0e2e8;
     font-family: 'Poppins', sans-serif;
 }
 
@@ -22,12 +22,12 @@ body {
 
 .game-container {
     text-align: center;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.03);
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 h1 {
@@ -35,14 +35,14 @@ h1 {
     margin-bottom: 5px;
     letter-spacing: 3px;
     font-size: 2.5rem;
-    color: #4facfe;
-    text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+    color: #65aee6;
+    text-shadow: 0 0 5px rgba(101, 174, 230, 0.3);
 }
 
 .subtitle {
     margin-top: -5px;
     margin-bottom: 25px;
-    color: #a0a5b5;
+    color: #9297a8;
     font-style: italic;
     font-size: 0.9rem;
 }
@@ -50,26 +50,32 @@ h1 {
 .score-board {
     font-size: 20px;
     margin-bottom: 20px;
-    color: #fff;
+    color: #e0e2e8;
     font-weight: 600;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.15);
     padding: 10px 20px;
     border-radius: 10px;
     display: inline-block;
+    min-width: 160px;
+    text-align: center;
 }
 
 #score {
-    color: #ff4757;
+    color: #e86674;
     font-size: 24px;
     margin-left: 10px;
-    text-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+    text-shadow: 0 0 5px rgba(232, 102, 116, 0.3);
+    display: inline-block;
+    min-width: 60px;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
 }
 
 canvas {
-    background-color: #1a1a2e;
-    border: 3px solid #4facfe;
+    background-color: #222436;
+    border: 3px solid #65aee6;
     border-radius: 8px;
-    box-shadow: 0 0 25px rgba(79, 172, 254, 0.3);
+    box-shadow: 0 0 15px rgba(101, 174, 230, 0.15);
 }
 
 button {
@@ -78,18 +84,18 @@ button {
     font-size: 16px;
     font-weight: 700;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(90deg, #ff4757, #ff6b81);
+    background: linear-gradient(90deg, #e86674, #ea828c);
     color: white;
     border: none;
     cursor: pointer;
     border-radius: 50px;
-    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+    box-shadow: 0 4px 12px rgba(232, 102, 116, 0.25);
     transition: all 0.3s ease;
 }
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
+    box-shadow: 0 6px 16px rgba(232, 102, 116, 0.4);
 }
 
 button:active {

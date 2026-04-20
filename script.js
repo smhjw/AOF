@@ -105,11 +105,11 @@ function update() {
 
 function draw() {
     // 背景
-    ctx.fillStyle = '#1a1a2e';
+    ctx.fillStyle = '#222436';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // 网格线
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvas.width; i += gridSize) {
         ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
@@ -122,32 +122,32 @@ function draw() {
         
         ctx.textAlign = 'center';
         if (isGameWon) {
-            ctx.fillStyle = '#f1c40f';
+            ctx.fillStyle = '#e2bd2f';
             ctx.font = 'bold 32px Poppins, Arial';
             ctx.fillText('👑 完美通关！', canvas.width / 2, canvas.height / 2 - 20);
         } else {
-            ctx.fillStyle = '#ff4757';
+            ctx.fillStyle = '#e65c68';
             ctx.font = 'bold 36px Poppins, Arial';
             ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2 - 20);
         }
         
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#e0e2e8';
         ctx.font = '20px Poppins, Arial';
         ctx.fillText(`最终得分: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
         return;
     }
     
     if (!isGameStarted) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#4facfe';
+        ctx.fillStyle = '#65aee6';
         ctx.font = 'bold 22px Poppins, Arial';
         ctx.textAlign = 'center';
         ctx.fillText('滑动或按方向键开始', canvas.width / 2, canvas.height / 2);
     } else if (isPaused) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#f1c40f';
+        ctx.fillStyle = '#e2bd2f';
         ctx.font = 'bold 28px Poppins, Arial';
         ctx.textAlign = 'center';
         ctx.fillText('已暂停 PAUSED', canvas.width / 2, canvas.height / 2);
@@ -155,9 +155,9 @@ function draw() {
 
     // 绘制食物
     if (food) {
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#ff4757';
-        ctx.fillStyle = '#ff4757';
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#e65c68';
+        ctx.fillStyle = '#e65c68';
         ctx.beginPath();
         ctx.arc(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2, gridSize / 2 - 3, 0, Math.PI * 2);
         ctx.fill();
@@ -167,11 +167,11 @@ function draw() {
     // 绘制渐变蛇身
     for (let i = 0; i < snake.length; i++) {
         const colorRatio = i / snake.length;
-        const r = Math.floor(46 - (46 - 20) * colorRatio);
-        const g = Math.floor(204 - (204 - 100) * colorRatio);
-        const b = Math.floor(113 - (113 - 50) * colorRatio);
+        const r = Math.floor(61 - (61 - 35) * colorRatio);
+        const g = Math.floor(178 - (178 - 100) * colorRatio);
+        const b = Math.floor(107 - (107 - 65) * colorRatio);
         
-        ctx.fillStyle = i === 0 ? '#2ecc71' : `rgb(${r}, ${g}, ${b})`;
+        ctx.fillStyle = i === 0 ? '#3db26b' : `rgb(${r}, ${g}, ${b})`;
         
         ctx.beginPath();
         if (ctx.roundRect) {

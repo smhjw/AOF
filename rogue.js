@@ -182,11 +182,13 @@ document.addEventListener('keydown', (e) => {
         if (isGameOver || upgradeModal.style.display === 'flex') return;
         if (isGameStarted) {
             isPaused = !isPaused;
+            draw(); // 立即渲染暂停画面
         }
         return;
     }
 
-    if (isGameOver || isPaused) return;
+    // 如果游戏结束，或者游戏处于真实的“暂停”状态且不是在等待玩家起步，则忽略输入
+    if (isGameOver || (isPaused && isGameStarted)) return;
 
     let newDx = 0, newDy = 0;
     let isDirKey = false;
@@ -214,7 +216,8 @@ document.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 document.addEventListener('touchend', (e) => {
-    if (isGameOver || isPaused) return;
+    if (isGameOver || (isPaused && isGameStarted)) return;
+    
     let touchEndX = e.changedTouches[0].screenX;
     let touchEndY = e.changedTouches[0].screenY;
     
@@ -233,6 +236,7 @@ document.addEventListener('touchend', (e) => {
         handleDirectionInput(newDx, newDy);
     } else if (e.target === canvas && isGameStarted && !isGameOver && upgradeModal.style.display !== 'flex') {
          isPaused = !isPaused;
+         draw();
     }
 }, { passive: false });
 
@@ -385,7 +389,7 @@ function updateBullets(dt) {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = 'rgba(138, 43, 226, 0.1)';
+    ctx.strokeStyle = 'rgba(138, 43, 226, 0.04)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvas.width; i += gridSize) {
         ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
@@ -393,9 +397,9 @@ function draw() {
     }
 
     if (food) {
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#f39c12';
-        ctx.fillStyle = '#f1c40f';
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#d8bc61';
+        ctx.fillStyle = '#e2bd2f';
         ctx.beginPath();
         ctx.arc(food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2, gridSize/2 - 2, 0, Math.PI*2);
         ctx.fill();
@@ -407,13 +411,12 @@ function draw() {
     }
 
     for (let b of bullets) {
-        ctx.shadowBlur = 5;
-        ctx.shadowColor = b.color;
+        // 完全移除子弹辉光，减轻快速运动物体的视觉疲劳
+        ctx.shadowBlur = 0;
         ctx.fillStyle = b.color;
         ctx.beginPath();
         ctx.arc(b.x * gridSize + gridSize/2, b.y * gridSize + gridSize/2, b.size, 0, Math.PI*2);
         ctx.fill();
-        ctx.shadowBlur = 0;
     }
 
     for (let i = snake.length - 1; i >= 0; i--) {
@@ -422,17 +425,17 @@ function draw() {
         
         ctx.fillStyle = color;
         if (i === 0) {
-            ctx.shadowBlur = 10; ctx.shadowColor = color;
+            ctx.shadowBlur = 4; ctx.shadowColor = color;
             ctx.fillRect(seg.x * gridSize + 1, seg.y * gridSize + 1, gridSize - 2, gridSize - 2);
             ctx.shadowBlur = 0;
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(seg.x * gridSize + 5, seg.y * gridSize + 5, 3, 3);
             ctx.fillRect(seg.x * gridSize + 12, seg.y * gridSize + 5, 3, 3);
         } else {
             ctx.beginPath();
             ctx.arc(seg.x * gridSize + gridSize/2, seg.y * gridSize + gridSize/2, gridSize/2 - 1, 0, Math.PI*2);
             ctx.fill();
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
             ctx.beginPath();
             ctx.arc(seg.x * gridSize + gridSize/2, seg.y * gridSize + gridSize/2, 2, 0, Math.PI*2);
             ctx.fill();
@@ -443,7 +446,8 @@ function draw() {
         let px = e.x * gridSize;
         let py = e.y * gridSize;
         
-        ctx.fillStyle = e.slowTimer > 0 ? '#74b9ff' : '#ff4757';
+        // 调整敌人的颜色
+        ctx.fillStyle = e.slowTimer > 0 ? '#6ca0eb' : '#e65c68';
         ctx.beginPath();
         ctx.moveTo(px + gridSize/2, py);
         ctx.lineTo(px + gridSize, py + gridSize);
@@ -451,17 +455,17 @@ function draw() {
         ctx.closePath();
         ctx.fill();
 
-        ctx.fillStyle = '#333';
+        ctx.fillStyle = '#2c2c38';
         ctx.fillRect(px, py - 6, gridSize, 3);
-        ctx.fillStyle = '#2ecc71';
+        ctx.fillStyle = '#3db26b';
         ctx.fillRect(px, py - 6, gridSize * (Math.max(0, e.hp) / e.maxHp), 3);
     }
     
     // 暂停 UI 遮罩
     if (isPaused && upgradeModal.style.display !== 'flex') {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#f1c40f';
+        ctx.fillStyle = '#e2bd2f';
         ctx.font = 'bold 30px Poppins, Arial';
         ctx.textAlign = 'center';
         ctx.fillText('已暂停 PAUSED', canvas.width / 2, canvas.height / 2);
@@ -473,6 +477,9 @@ function draw() {
 function updateStats() {
     lengthDisplay.innerText = snake.length;
     killDisplay.innerText = kills;
+    if (expDisplay) {
+        expDisplay.innerText = Math.floor((currentExp / expToNextLevel) * 100) + '%';
+    }
 }
 
 function triggerUpgrade() {
@@ -513,6 +520,18 @@ function triggerWin() {
     isGameWon = true;
     document.getElementById('gameOverModal').querySelector('h2').innerText = "🏆 堡垒化身神明！";
     document.getElementById('gameOverModal').querySelector('h2').style.color = "#f1c40f";
+    document.getElementById('finalLength').innerText = snake.length + " (满级)";
+    document.getElementById('finalKills').innerText = kills;
+    gameOverModal.style.display = 'flex';
+}
+
+initGame();f";
+    document.getElementById('finalLength').innerText = snake.length + " (满级)";
+    document.getElementById('finalKills').innerText = kills;
+    gameOverModal.style.display = 'flex';
+}
+
+initGame();lor = "#f1c40f";
     document.getElementById('finalLength').innerText = snake.length + " (满级)";
     document.getElementById('finalKills').innerText = kills;
     gameOverModal.style.display = 'flex';

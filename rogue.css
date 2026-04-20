@@ -6,8 +6,8 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background: radial-gradient(circle at center, #2b1055 0%, #0f0c29 100%);
-    color: #fff;
+    background: radial-gradient(circle at center, #2e2040 0%, #1c1a25 100%);
+    color: #e0e2e8;
     font-family: 'Poppins', sans-serif;
 }
 
@@ -17,11 +17,11 @@ body {
 
 .game-container {
     text-align: center;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.25);
     padding: 20px 30px;
     border-radius: 15px;
-    box-shadow: 0 0 40px rgba(138, 43, 226, 0.4);
-    border: 1px solid rgba(138, 43, 226, 0.3);
+    box-shadow: 0 0 25px rgba(138, 43, 226, 0.2);
+    border: 1px solid rgba(138, 43, 226, 0.15);
     position: relative;
 }
 
@@ -39,28 +39,28 @@ h1 {
 }
 
 .rogue-title {
-    color: #f39c12;
-    text-shadow: 0 0 15px #f39c12;
+    color: #e2ae44;
+    text-shadow: 0 0 8px rgba(226, 174, 68, 0.6);
     font-style: italic;
 }
 
 .back-btn {
-    color: #a0a5b5;
+    color: #9297a8;
     text-decoration: none;
     font-size: 0.9rem;
-    border: 1px solid #a0a5b5;
+    border: 1px solid #9297a8;
     padding: 5px 10px;
     border-radius: 5px;
     transition: 0.3s;
 }
 
 .back-btn:hover {
-    background: #a0a5b5;
-    color: #0f0c29;
+    background: #9297a8;
+    color: #1c1a25;
 }
 
 .subtitle {
-    color: #bdc3c7;
+    color: #a4a9b5;
     margin-bottom: 15px;
     text-align: left;
     font-size: 0.9rem;
@@ -69,12 +69,12 @@ h1 {
 .stats-board {
     display: flex;
     justify-content: space-around;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.03);
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 15px;
     font-weight: bold;
-    color: #00d2d3;
+    color: #3bbcb8;
 }
 
 .canvas-wrapper {
@@ -85,10 +85,10 @@ h1 {
 }
 
 canvas {
-    background-color: #0b0914;
-    border: 2px solid #8e44ad;
+    background-color: #1e1e2a;
+    border: 2px solid #7a4691;
     border-radius: 8px;
-    box-shadow: inset 0 0 20px rgba(138, 43, 226, 0.2);
+    box-shadow: inset 0 0 15px rgba(138, 43, 226, 0.15);
 }
 
 .overlay-text {
@@ -98,8 +98,8 @@ canvas {
     transform: translate(-50%, -50%);
     font-size: 20px;
     font-weight: bold;
-    color: #fff;
-    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    color: #f0f0f0;
+    text-shadow: 0 0 6px rgba(255,255,255,0.3);
     pointer-events: none;
 }
 
