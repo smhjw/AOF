@@ -4,6 +4,7 @@ const ctx = canvas.getContext('2d');
 // UI 元素
 const lengthDisplay = document.getElementById('lengthDisplay');
 const killDisplay = document.getElementById('killDisplay');
+const expDisplay = document.getElementById('expDisplay');
 const startPrompt = document.getElementById('startPrompt');
 const upgradeModal = document.getElementById('upgradeModal');
 const gameOverModal = document.getElementById('gameOverModal');
@@ -28,11 +29,16 @@ let bullets = [];
 let food = null;
 
 let kills = 0;
+let currentExp = 0;
+let expToNextLevel = 5;
 let lastSnakeMoveTime = 0;
 const SNAKE_SPEED = 120; // 蛇移动间隔(ms)
 
 let lastEnemySpawnTime = 0;
-let enemySpawnRate = 2000;
+let enemySpawnRate = 3500;
+
+let gameStartTime = 0;
+let maxSnakeLength = 1;
 
 // 武器配置字典
 const WEAPONS = {
@@ -51,7 +57,10 @@ function initGame() {
     ];
     dx = 0; dy = 0; directionQueue = [];
     enemies = []; bullets = []; kills = 0;
-    enemySpawnRate = 2000;
+    currentExp = 0; expToNextLevel = 5;
+    enemySpawnRate = 3500;
+    gameStartTime = 0;
+    maxSnakeLength = 1;
     
     updateStats();
     spawnFood();
@@ -91,7 +100,7 @@ function gameLoop(timestamp) {
         if (timestamp - lastEnemySpawnTime > enemySpawnRate) {
             spawnEnemy();
             lastEnemySpawnTime = timestamp;
-            enemySpawnRate = Math.max(400, 2000 - kills * 20); 
+            enemySpawnRate = Math.max(600, 3500 - kills * 30); 
         }
 
         updateEnemies(dt);
@@ -142,7 +151,13 @@ function moveSnake() {
     snake = newSnake;
 
     if (ateFood) {
-        triggerUpgrade();
+        spawnFood();
+        let hasWeapon = snake.some((s, i) => i > 0 && s.weaponType !== 'head');
+        if (!hasWeapon) {
+            triggerUpgrade();
+        } else {
+            updateStats();
+        }
     }
 }
 
@@ -151,7 +166,8 @@ function handleDirectionInput(newDx, newDy) {
         isGameStarted = true;
         startPrompt.style.display = 'none';
         lastSnakeMoveTime = performance.now();
-        dx = newDx; 
+        gameStartTime = performance.now();
+        dx = newDx;
         dy = newDy;
         return;
     }
@@ -375,6 +391,10 @@ function updateBullets(dt) {
                 if (e.hp <= 0) {
                     enemies.splice(j, 1);
                     kills++;
+                    currentExp++;
+                    if (currentExp >= expToNextLevel) {
+                        triggerUpgrade();
+                    }
                     updateStats();
                 }
                 break; 
@@ -477,8 +497,15 @@ function draw() {
 function updateStats() {
     lengthDisplay.innerText = snake.length;
     killDisplay.innerText = kills;
+    if (snake.length > maxSnakeLength) maxSnakeLength = snake.length;
+
+    const pct = Math.floor((currentExp / expToNextLevel) * 100);
     if (expDisplay) {
-        expDisplay.innerText = Math.floor((currentExp / expToNextLevel) * 100) + '%';
+        expDisplay.innerText = pct + '%';
+    }
+    const expBarFill = document.getElementById('expBarFill');
+    if (expBarFill) {
+        expBarFill.style.width = pct + '%';
     }
 }
 
@@ -488,52 +515,60 @@ function triggerUpgrade() {
 }
 
 function selectUpgrade(type) {
-    snake[snake.length - 1].weaponType = type;
+    let upgraded = false;
+    for (let i = snake.length - 1; i >= 1; i--) {
+        if (snake[i].weaponType === 'head') {
+            snake[i].weaponType = type;
+            upgraded = true;
+            break;
+        }
+    }
+    if (!upgraded && snake.length > 1) {
+        snake[snake.length - 1].weaponType = type;
+    }
+
+    currentExp = 0;
+    expToNextLevel = Math.min(15, 5 + Math.floor(kills / 5));
 
     upgradeModal.style.display = 'none';
-    spawnFood(); 
-    
-    if (!food) {
-        triggerWin();
-        return;
-    }
-    
     updateStats();
 
     isPaused = false;
     isGameStarted = false;
-    directionQueue = []; 
-
+    directionQueue = [];
     startPrompt.innerHTML = '升级完成！<br><span style="font-size:16px; color:#a0a5b5;">滑动或按方向键继续</span>';
     startPrompt.style.display = 'block';
 }
 
+function formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return min > 0 ? min + 'm ' + sec + 's' : sec + 's';
+}
+
 function triggerGameOver() {
     isGameOver = true;
+    const survivalTime = gameStartTime > 0 ? performance.now() - gameStartTime : 0;
     document.getElementById('finalLength').innerText = snake.length;
     document.getElementById('finalKills').innerText = kills;
+    document.getElementById('finalTime').innerText = formatTime(survivalTime);
+    document.getElementById('finalMaxLen').innerText = maxSnakeLength;
+    document.getElementById('gameOverTitle').innerText = '堡垒被摧毁！';
+    document.getElementById('gameOverTitle').style.color = '#ff4757';
     gameOverModal.style.display = 'flex';
 }
 
 function triggerWin() {
     isGameOver = true;
     isGameWon = true;
-    document.getElementById('gameOverModal').querySelector('h2').innerText = "🏆 堡垒化身神明！";
-    document.getElementById('gameOverModal').querySelector('h2').style.color = "#f1c40f";
-    document.getElementById('finalLength').innerText = snake.length + " (满级)";
+    const survivalTime = gameStartTime > 0 ? performance.now() - gameStartTime : 0;
+    document.getElementById('gameOverTitle').innerText = '🏆 堡垒化身神明！';
+    document.getElementById('gameOverTitle').style.color = '#f1c40f';
+    document.getElementById('finalLength').innerText = snake.length + ' (满级)';
     document.getElementById('finalKills').innerText = kills;
-    gameOverModal.style.display = 'flex';
-}
-
-initGame();f";
-    document.getElementById('finalLength').innerText = snake.length + " (满级)";
-    document.getElementById('finalKills').innerText = kills;
-    gameOverModal.style.display = 'flex';
-}
-
-initGame();lor = "#f1c40f";
-    document.getElementById('finalLength').innerText = snake.length + " (满级)";
-    document.getElementById('finalKills').innerText = kills;
+    document.getElementById('finalTime').innerText = formatTime(survivalTime);
+    document.getElementById('finalMaxLen').innerText = maxSnakeLength;
     gameOverModal.style.display = 'flex';
 }
 

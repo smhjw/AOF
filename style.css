@@ -1,130 +1,195 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
 
+/* ============ 基础布局 ============ */
 body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
-    background: linear-gradient(135deg, #232336 0%, #2a2a40 100%);
+    background: radial-gradient(circle at center, #1e2a40 0%, #181c2a 100%);
     color: #e0e2e8;
     font-family: 'Poppins', sans-serif;
 }
 
 .app-wrapper {
     display: flex;
-    gap: 40px;
+    gap: 30px;
     align-items: flex-start;
     flex-wrap: wrap;
     justify-content: center;
     padding: 20px;
 }
 
+/* ============ 游戏容器 ============ */
 .game-container {
     text-align: center;
     background: rgba(255, 255, 255, 0.03);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    padding: 25px 30px 20px;
+    border-radius: 16px;
+    box-shadow: 0 0 30px rgba(101, 174, 230, 0.1);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(101, 174, 230, 0.15);
+    animation: borderBreath 4s ease-in-out infinite;
+}
+
+@keyframes borderBreath {
+    0%, 100% { border-color: rgba(101, 174, 230, 0.12); box-shadow: 0 0 25px rgba(101, 174, 230, 0.08); }
+    50% { border-color: rgba(101, 174, 230, 0.3); box-shadow: 0 0 35px rgba(101, 174, 230, 0.15); }
 }
 
 h1 {
     margin-top: 0;
-    margin-bottom: 5px;
-    letter-spacing: 3px;
+    margin-bottom: 2px;
+    letter-spacing: 4px;
     font-size: 2.5rem;
+    font-weight: 900;
     color: #65aee6;
-    text-shadow: 0 0 5px rgba(101, 174, 230, 0.3);
+    text-shadow: 0 0 8px rgba(101, 174, 230, 0.3);
 }
 
 .subtitle {
-    margin-top: -5px;
-    margin-bottom: 25px;
+    margin-top: 0;
+    margin-bottom: 20px;
     color: #9297a8;
     font-style: italic;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
 }
 
-.score-board {
-    font-size: 20px;
-    margin-bottom: 20px;
-    color: #e0e2e8;
-    font-weight: 600;
+/* ============ 状态栏 ============ */
+.stats-board {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
     background: rgba(0, 0, 0, 0.15);
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 10px;
-    display: inline-block;
-    min-width: 160px;
+    margin-bottom: 18px;
+    border-bottom: 2px solid rgba(101, 174, 230, 0.15);
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-icon {
+    font-size: 16px;
+}
+
+.stat-label {
+    color: #9297a8;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.stat-value {
+    font-weight: 700;
+    font-size: 20px;
+    min-width: 30px;
     text-align: center;
+    font-variant-numeric: tabular-nums;
 }
 
 #score {
     color: #e86674;
-    font-size: 24px;
-    margin-left: 10px;
     text-shadow: 0 0 5px rgba(232, 102, 116, 0.3);
-    display: inline-block;
-    min-width: 60px;
-    text-align: left;
-    font-variant-numeric: tabular-nums;
 }
 
+#lengthDisplay {
+    color: #3bbcb8;
+}
+
+/* ============ 画布 ============ */
 canvas {
     background-color: #222436;
-    border: 3px solid #65aee6;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(101, 174, 230, 0.15);
+    border: 2px solid rgba(101, 174, 230, 0.4);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(101, 174, 230, 0.1), inset 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
+/* ============ 按钮 ============ */
 button {
-    margin-top: 25px;
+    margin-top: 20px;
     padding: 12px 30px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(90deg, #e86674, #ea828c);
+    background: linear-gradient(135deg, #e86674, #ea828c);
     color: white;
     border: none;
     cursor: pointer;
-    border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(232, 102, 116, 0.25);
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(232, 102, 116, 0.25);
     transition: all 0.3s ease;
+    letter-spacing: 1px;
 }
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(232, 102, 116, 0.4);
+    box-shadow: 0 6px 20px rgba(232, 102, 116, 0.4);
 }
 
 button:active {
     transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(232, 102, 116, 0.2);
 }
 
-/* 排行榜样式 */
+/* ============ ROGUE 入口 ============ */
+.rogue-entry {
+    margin-top: 18px;
+}
+
+.rogue-btn {
+    display: inline-block;
+    color: #1e1e2f;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    padding: 10px 22px;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+    transition: all 0.3s ease;
+    animation: rogueGlow 2s ease-in-out infinite;
+}
+
+.rogue-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 25px rgba(243, 156, 18, 0.5);
+}
+
+@keyframes rogueGlow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3); }
+    50% { box-shadow: 0 4px 25px rgba(243, 156, 18, 0.5), 0 0 10px rgba(243, 156, 18, 0.2); }
+}
+
+/* ============ 排行榜 ============ */
 .leaderboard-container {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 25px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 22px;
     width: 250px;
-    height: 400px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
+    height: 420px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
-    margin-top: 50px; 
+    margin-top: 45px;
 }
 
 .leaderboard-container h2 {
     margin-top: 0;
+    margin-bottom: 0;
     color: #eccc68;
     text-align: center;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 15px;
-    font-size: 1.5rem;
-    text-shadow: 0 0 10px rgba(236, 204, 104, 0.3);
+    padding-bottom: 14px;
+    font-size: 1.4rem;
+    text-shadow: 0 0 8px rgba(236, 204, 104, 0.25);
+    border-bottom: 2px solid rgba(236, 204, 104, 0.15);
 }
 
 #leaderboardList {
@@ -137,24 +202,33 @@ button:active {
 
 /* 自定义滚动条 */
 #leaderboardList::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 #leaderboardList::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.1); 
+    background: rgba(0, 0, 0, 0.1);
     border-radius: 10px;
 }
 #leaderboardList::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.2); 
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 10px;
+}
+#leaderboardList::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 #leaderboardList li {
     display: flex;
     justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 15px;
+    padding: 11px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 14px;
     align-items: center;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+#leaderboardList li:hover {
+    background: rgba(255, 255, 255, 0.04);
 }
 
 #leaderboardList li span.name {
@@ -169,43 +243,66 @@ button:active {
 #leaderboardList li span.score {
     color: #ff4757;
     font-weight: 700;
-    background-color: rgba(255, 71, 87, 0.15);
-    padding: 4px 10px;
-    border-radius: 20px;
+    background-color: rgba(255, 71, 87, 0.12);
+    padding: 3px 10px;
+    border-radius: 15px;
     min-width: 35px;
     text-align: center;
-    border: 1px solid rgba(255, 71, 87, 0.3);
+    border: 1px solid rgba(255, 71, 87, 0.2);
+    font-size: 13px;
 }
 
 .small-btn {
-    margin-top: 20px;
-    padding: 10px;
-    font-size: 14px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #a0a5b5;
+    margin-top: 15px;
+    padding: 9px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #9297a8;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     width: 100%;
+    border-radius: 20px;
+    letter-spacing: 0;
 }
 
 .small-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: none;
     transform: none;
 }
 
+/* ============ 响应式 ============ */
 @media (max-width: 768px) {
     .app-wrapper {
         flex-direction: column;
         align-items: center;
         gap: 20px;
     }
+
+    .game-container {
+        padding: 20px;
+    }
+
+    canvas {
+        max-width: 100%;
+        height: auto;
+    }
+
     .leaderboard-container {
         margin-top: 0;
         height: auto;
         min-height: 250px;
-        width: 80%;
-        max-width: 350px;
+        width: 85%;
+        max-width: 380px;
+    }
+
+    .stats-board {
+        gap: 20px;
+    }
+
+    .rogue-btn {
+        font-size: 13px;
+        padding: 9px 18px;
     }
 }

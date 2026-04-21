@@ -11,15 +11,28 @@
         <div class="game-container">
             <h1>AOF</h1>
             <p class="subtitle">Always Out for Food (永远在觅食)</p>
-            <div class="score-board">当前分数: <span id="score">0</span></div>
+
+            <div class="stats-board">
+                <div class="stat">
+                    <span class="stat-icon">🍎</span>
+                    <span class="stat-label">分数</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">📏</span>
+                    <span class="stat-label">长度</span>
+                    <span class="stat-value" id="lengthDisplay">3</span>
+                </div>
+            </div>
+
             <canvas id="gameCanvas" width="400" height="400"></canvas>
             <br>
             <button id="restartBtn" style="display: none;">重新开始</button>
-            <div style="margin-top: 15px;">
-                <a href="rogue.html" style="color: #f39c12; text-decoration: none; font-weight: bold; border: 1px solid #f39c12; padding: 8px 15px; border-radius: 5px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#f39c12'; this.style.color='#1e1e2f'" onmouseout="this.style.background='transparent'; this.style.color='#f39c12'">🔥 体验全新 ROGUE 武装模式</a>
+            <div class="rogue-entry">
+                <a href="rogue.html" class="rogue-btn">🔥 体验全新 ROGUE 武装模式 →</a>
             </div>
         </div>
-        
+
         <div class="leaderboard-container">
             <h2>🏆 排行榜</h2>
             <ul id="leaderboardList">

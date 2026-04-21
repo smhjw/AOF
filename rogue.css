@@ -1,10 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
 
+/* ============ 基础布局 ============ */
 body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
     background: radial-gradient(circle at center, #2e2040 0%, #1c1a25 100%);
     color: #e0e2e8;
@@ -18,24 +19,32 @@ body {
 .game-container {
     text-align: center;
     background: rgba(0, 0, 0, 0.25);
-    padding: 20px 30px;
-    border-radius: 15px;
-    box-shadow: 0 0 25px rgba(138, 43, 226, 0.2);
-    border: 1px solid rgba(138, 43, 226, 0.15);
+    padding: 20px 30px 15px;
+    border-radius: 16px;
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.15);
+    border: 1px solid rgba(138, 43, 226, 0.2);
     position: relative;
+    animation: borderBreath 4s ease-in-out infinite;
 }
 
+@keyframes borderBreath {
+    0%, 100% { border-color: rgba(138, 43, 226, 0.15); box-shadow: 0 0 25px rgba(138, 43, 226, 0.1); }
+    50% { border-color: rgba(138, 43, 226, 0.35); box-shadow: 0 0 35px rgba(138, 43, 226, 0.2); }
+}
+
+/* ============ 头部 ============ */
 .header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: -10px;
+    margin-bottom: -8px;
 }
 
 h1 {
     margin: 0;
     font-size: 2.2rem;
     font-weight: 900;
+    color: #e0e2e8;
 }
 
 .rogue-title {
@@ -47,36 +56,106 @@ h1 {
 .back-btn {
     color: #9297a8;
     text-decoration: none;
-    font-size: 0.9rem;
-    border: 1px solid #9297a8;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: 0.3s;
+    font-size: 0.85rem;
+    border: 1px solid rgba(146, 151, 168, 0.4);
+    padding: 6px 14px;
+    border-radius: 20px;
+    transition: all 0.3s;
 }
 
 .back-btn:hover {
-    background: #9297a8;
-    color: #1c1a25;
+    background: rgba(146, 151, 168, 0.15);
+    color: #fff;
+    border-color: rgba(146, 151, 168, 0.6);
 }
 
 .subtitle {
     color: #a4a9b5;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
 }
 
+/* ============ 状态栏 ============ */
 .stats-board {
     display: flex;
-    justify-content: space-around;
-    background: rgba(255,255,255,0.03);
-    padding: 10px;
-    border-radius: 8px;
+    justify-content: center;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 18px;
+    border-radius: 10px;
     margin-bottom: 15px;
-    font-weight: bold;
-    color: #3bbcb8;
+    border-bottom: 2px solid rgba(138, 43, 226, 0.2);
 }
 
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.stat-icon {
+    font-size: 16px;
+}
+
+.stat-label {
+    color: #9297a8;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.stat-value {
+    color: #3bbcb8;
+    font-weight: 700;
+    font-size: 18px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.stat-exp {
+    flex: 1;
+    max-width: 220px;
+}
+
+/* 能量进度条 */
+.exp-bar {
+    position: relative;
+    flex: 1;
+    height: 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 9px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-width: 100px;
+}
+
+.exp-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #8e44ad, #e74c3c, #f1c40f);
+    border-radius: 9px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 8px rgba(241, 196, 15, 0.3);
+}
+
+.exp-bar-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* ============ 画布 ============ */
 .canvas-wrapper {
     position: relative;
     width: 600px;
@@ -86,9 +165,9 @@ h1 {
 
 canvas {
     background-color: #1e1e2a;
-    border: 2px solid #7a4691;
-    border-radius: 8px;
-    box-shadow: inset 0 0 15px rgba(138, 43, 226, 0.15);
+    border: 2px solid rgba(122, 70, 145, 0.6);
+    border-radius: 10px;
+    box-shadow: inset 0 0 20px rgba(138, 43, 226, 0.1);
 }
 
 .overlay-text {
@@ -99,75 +178,264 @@ canvas {
     font-size: 20px;
     font-weight: bold;
     color: #f0f0f0;
-    text-shadow: 0 0 6px rgba(255,255,255,0.3);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     pointer-events: none;
+    text-align: center;
+    line-height: 1.6;
 }
 
-/* 模态框 (Modal) 样式 */
+/* ============ 武器图例 ============ */
+.weapon-legend {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 12px;
+    padding: 8px 0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #9297a8;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 4px currentColor;
+}
+
+/* ============ 模态框通用 ============ */
 .overlay-modal {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(5px);
-    display: none; /* 默认隐藏 */
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(6px);
+    display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: 8px;
+    border-radius: 10px;
     z-index: 10;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .overlay-modal h2 {
     margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+}
+
+/* ============ 升级选择面板 ============ */
+#upgradeModal h2 {
     color: #f1c40f;
-    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+    text-shadow: 0 0 12px rgba(241, 196, 15, 0.4);
 }
 
 .choices-container {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 85%;
+    flex-direction: row;
+    gap: 12px;
+    width: 90%;
+    justify-content: center;
 }
 
 .choice-card {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.06);
     border: 2px solid;
-    padding: 10px 15px;
-    border-radius: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
     text-align: left;
+    flex: 1;
+    max-width: 180px;
 }
 
 .choice-card:hover {
-    transform: scale(1.05);
-    background: rgba(255,255,255,0.2);
+    transform: translateY(-4px) scale(1.02);
+    background: rgba(255, 255, 255, 0.12);
 }
 
-.choice-card h3 { margin: 0 0 5px 0; font-size: 1.1rem; }
-.choice-card p { margin: 0; font-size: 0.8rem; color: #ccc; }
+.choice-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
 
-.choice-card.fire { border-color: #ff4757; box-shadow: 0 0 10px rgba(255, 71, 87, 0.3); }
-.choice-card.fire h3 { color: #ff4757; }
+.choice-icon {
+    font-size: 20px;
+}
 
-.choice-card.ice { border-color: #70a1ff; box-shadow: 0 0 10px rgba(112, 161, 255, 0.3); }
+.choice-card h3 {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.choice-desc {
+    margin: 0 0 10px;
+    font-size: 0.75rem;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.choice-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.choice-stats span {
+    font-size: 0.7rem;
+    color: #999;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.choice-stats b {
+    color: #e0e2e8;
+}
+
+/* 各元素卡片颜色 */
+.choice-card.fire {
+    border-color: rgba(255, 71, 87, 0.5);
+}
+.choice-card.fire:hover {
+    border-color: #ff4757;
+    box-shadow: 0 0 20px rgba(255, 71, 87, 0.3), 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+.choice-card.fire h3 { color: #ff6b81; }
+
+.choice-card.ice {
+    border-color: rgba(112, 161, 255, 0.5);
+}
+.choice-card.ice:hover {
+    border-color: #70a1ff;
+    box-shadow: 0 0 20px rgba(112, 161, 255, 0.3), 0 4px 15px rgba(0, 0, 0, 0.3);
+}
 .choice-card.ice h3 { color: #70a1ff; }
 
-.choice-card.lightning { border-color: #eccc68; box-shadow: 0 0 10px rgba(236, 204, 104, 0.3); }
+.choice-card.lightning {
+    border-color: rgba(236, 204, 104, 0.5);
+}
+.choice-card.lightning:hover {
+    border-color: #eccc68;
+    box-shadow: 0 0 20px rgba(236, 204, 104, 0.3), 0 4px 15px rgba(0, 0, 0, 0.3);
+}
 .choice-card.lightning h3 { color: #eccc68; }
 
+/* ============ 游戏结束面板 ============ */
+.gameover-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 70%;
+    max-width: 320px;
+    margin-bottom: 15px;
+}
+
+.go-stat {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.go-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #9297a8;
+    margin-bottom: 4px;
+}
+
+.go-value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f0f0f0;
+}
+
+/* ============ 按钮 ============ */
 button {
-    margin-top: 20px;
-    padding: 10px 25px;
-    font-size: 16px;
-    font-weight: bold;
-    background: #8e44ad;
+    margin-top: 15px;
+    padding: 12px 30px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #8e44ad, #9b59b6);
     color: white;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
-    box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
-    transition: 0.3s;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.35);
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
 }
-button:hover { background: #9b59b6; transform: scale(1.05); }
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5);
+    background: linear-gradient(135deg, #9b59b6, #a66bbe);
+}
+
+button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3);
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 680px) {
+    .canvas-wrapper {
+        width: 90vw;
+        height: 90vw;
+        max-width: 600px;
+        max-height: 600px;
+    }
+
+    canvas {
+        width: 100%;
+        height: 100%;
+    }
+
+    .choices-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .choice-card {
+        max-width: 90%;
+        width: 100%;
+    }
+
+    .stats-board {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .stat-exp {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .weapon-legend {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .gameover-stats {
+        width: 85%;
+    }
+}

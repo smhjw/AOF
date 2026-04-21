@@ -11,50 +11,114 @@
         <div class="game-container">
             <div class="header-row">
                 <h1>AOF <span class="rogue-title">ROGUE</span></h1>
-                <a href="index.html" class="back-btn">返回经典模式</a>
+                <a href="index.html" class="back-btn">← 经典模式</a>
             </div>
             <p class="subtitle">移动堡垒 · 元素突变</p>
-            
+
             <div class="stats-board">
-                <div class="stat">节段长度: <span id="lengthDisplay">1</span></div>
-                <div class="stat">击杀数: <span id="killDisplay">0</span></div>
-                <div class="stat">能量充能: <span id="expDisplay">0%</span></div>
+                <div class="stat">
+                    <span class="stat-icon">🐍</span>
+                    <span class="stat-label">节段</span>
+                    <span class="stat-value" id="lengthDisplay">1</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">💀</span>
+                    <span class="stat-label">击杀</span>
+                    <span class="stat-value" id="killDisplay">0</span>
+                </div>
+                <div class="stat stat-exp">
+                    <span class="stat-icon">⚡</span>
+                    <span class="stat-label">能量</span>
+                    <div class="exp-bar">
+                        <div class="exp-bar-fill" id="expBarFill"></div>
+                        <span class="exp-bar-text" id="expDisplay">0%</span>
+                    </div>
+                </div>
             </div>
 
             <div class="canvas-wrapper">
                 <canvas id="gameCanvas" width="600" height="600"></canvas>
-                
+
                 <!-- 升级三选一面板 -->
                 <div id="upgradeModal" class="modal overlay-modal">
-                    <h2>✨ 能量满溢！选择突变方向 ✨</h2>
+                    <h2>⚡ 选择突变方向</h2>
                     <div class="choices-container">
                         <div class="choice-card fire" onclick="selectUpgrade('fire')">
-                            <h3>🔥 烈焰节段</h3>
-                            <p>发射高伤害的火球，缓慢但致命。</p>
+                            <div class="choice-header">
+                                <span class="choice-icon">🔥</span>
+                                <h3>烈焰节段</h3>
+                            </div>
+                            <p class="choice-desc">发射高伤害的火球，缓慢但致命。</p>
+                            <div class="choice-stats">
+                                <span>伤害 <b>30</b></span>
+                                <span>射速 <b>慢</b></span>
+                                <span>射程 <b>8</b></span>
+                            </div>
                         </div>
                         <div class="choice-card ice" onclick="selectUpgrade('ice')">
-                            <h3>❄️ 冰霜射线</h3>
-                            <p>发射冰冻弹，击中后大幅减速怪物。</p>
+                            <div class="choice-header">
+                                <span class="choice-icon">❄️</span>
+                                <h3>冰霜射线</h3>
+                            </div>
+                            <p class="choice-desc">发射冰冻弹，击中后大幅减速怪物。</p>
+                            <div class="choice-stats">
+                                <span>伤害 <b>10</b></span>
+                                <span>射速 <b>中</b></span>
+                                <span>射程 <b>7</b></span>
+                            </div>
                         </div>
                         <div class="choice-card lightning" onclick="selectUpgrade('lightning')">
-                            <h3>⚡ 闪电发生器</h3>
-                            <p>极高射速的微型电火花，快速清理杂兵。</p>
+                            <div class="choice-header">
+                                <span class="choice-icon">⚡</span>
+                                <h3>闪电发生器</h3>
+                            </div>
+                            <p class="choice-desc">极高射速的微型电火花，快速清理杂兵。</p>
+                            <div class="choice-stats">
+                                <span>伤害 <b>8</b></span>
+                                <span>射速 <b>快</b></span>
+                                <span>射程 <b>6</b></span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 游戏结束面板 -->
                 <div id="gameOverModal" class="modal overlay-modal">
-                    <h2 style="color: #ff4757;">堡垒被摧毁！</h2>
-                    <p>最终节段数: <span id="finalLength">0</span></p>
-                    <p>消灭怪物数: <span id="finalKills">0</span></p>
+                    <h2 id="gameOverTitle" style="color: #ff4757;">堡垒被摧毁！</h2>
+                    <div class="gameover-stats">
+                        <div class="go-stat">
+                            <span class="go-label">最终节段</span>
+                            <span class="go-value" id="finalLength">0</span>
+                        </div>
+                        <div class="go-stat">
+                            <span class="go-label">消灭怪物</span>
+                            <span class="go-value" id="finalKills">0</span>
+                        </div>
+                        <div class="go-stat">
+                            <span class="go-label">存活时间</span>
+                            <span class="go-value" id="finalTime">0s</span>
+                        </div>
+                        <div class="go-stat">
+                            <span class="go-label">最长蛇身</span>
+                            <span class="go-value" id="finalMaxLen">0</span>
+                        </div>
+                    </div>
                     <button id="restartBtn" onclick="location.reload()">重新部署</button>
                 </div>
-                
+
                 <!-- 开始提示 -->
                 <div id="startPrompt" class="overlay-text">
-                    按方向键 (↑↓←→) 启动防线
+                    滑动或按方向键 (↑↓←→) 启动防线
                 </div>
+            </div>
+
+            <!-- 武器图例 -->
+            <div class="weapon-legend">
+                <div class="legend-item"><span class="legend-dot" style="background:#2ecc71;"></span>蛇头</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#ff4757;"></span>烈焰</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#70a1ff;"></span>冰霜</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#eccc68;"></span>闪电</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#e65c68;"></span>怪物</div>
             </div>
         </div>
     </div>

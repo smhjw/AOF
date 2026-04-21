@@ -1,6 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
+const lengthDisplay = document.getElementById('lengthDisplay');
 const restartBtn = document.getElementById('restartBtn');
 const leaderboardList = document.getElementById('leaderboardList');
 const clearBoardBtn = document.getElementById('clearBoardBtn');
@@ -37,6 +38,7 @@ function initGame() {
     directionQueue = []; 
     score = 0;
     scoreElement.innerText = score;
+    if (lengthDisplay) lengthDisplay.innerText = 3;
     isGameOver = false;
     isGameStarted = false;
     isPaused = false;
@@ -87,6 +89,7 @@ function update() {
     if (food && head.x === food.x && head.y === food.y) {
         score += 10;
         scoreElement.innerText = score;
+        if (lengthDisplay) lengthDisplay.innerText = snake.length;
         placeFood();
         if (!food) {
             // 完美通关：蛇占据了所有格子
